@@ -7,6 +7,7 @@ This is a temporary script file.
 
 import prime
 import random
+import fileHandler
 
 # Generate k-bit RSA public/private key pair
 def generate_key_pair(keysize):
@@ -35,8 +36,9 @@ def generate_key_pair(keysize):
 
 # Encrypt binary data using public key
 def encrypt(data, public_key):
-    pass
+    e,n = fileHandler.readPubKeyPair()
+    
 
 # Decrypt using private key
 def decrypt():
-    pass
+    d,n = fileHandler.readPrivKeyPair()

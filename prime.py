@@ -10,8 +10,8 @@ import random
 
     
 def initPrimes() -> int:
-    minPrime = 2**100
-    maxPrime = 2**128
+    minPrime = 2**1023
+    maxPrime = (2**1024 - 1)
 
     while True:
         prime = random.randint(minPrime,maxPrime)
