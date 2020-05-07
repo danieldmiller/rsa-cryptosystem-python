@@ -17,7 +17,7 @@ def generate_key_pair(keysize):
         q=prime.initPrimes()
         if(p!=q):
             break
-    
+
     n = p*q
     
     phi = (p-1) * (q-1)

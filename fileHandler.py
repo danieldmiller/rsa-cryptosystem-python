@@ -5,8 +5,12 @@ Created on Thu Apr 23 16:28:39 2020
 @author: Ville Vainio
 """
 
+import math
+
+BYTE_COUNT_DECRYPT_CHUNK = 4
+BYTE_COUNT_READ_CHUNK = 2
+
 def saveKeyPair(e,d,n):
-    #(pub_key, priv_key) = rsa.generate_key_pair(keysize)
     fileName = "publicKey.txt"
     print('Writing public key to %s' % fileName)
     with open(fileName, 'w') as outfile:
@@ -25,7 +29,6 @@ def saveKeyPair(e,d,n):
        outfile.write(str(d))
 
 def readPubKeyPair():
-    
     pubFile = "publicKey.txt"
 
     with open(pubFile, 'r') as infile:
@@ -36,7 +39,7 @@ def readPubKeyPair():
        e = int(e)
        infile.close()
        
-    return (e,n)
+    return (n,e)
 
 def readPrivKeyPair():
     privFile = "privateKey.txt"
@@ -48,55 +51,71 @@ def readPrivKeyPair():
         d = int(d)
         infile.close()
 
-    return (d,n)
+    return (n,d)
 
 def encryptFileInChunks(path):
     f = open(path, 'rb')
     fileName = "encrypted-" + path
-    print("Encrypting " + path + " as " + fileName)
+    print("Encrypting " + path + " to " + fileName)
 
-    with open(fileName, 'w') as outfile:
+    with open(fileName, 'wb') as outfile:
         while True:
-            chunk = f.read(1024)
+            chunk = f.read(BYTE_COUNT_READ_CHUNK)
             if not chunk:
                 break
-
             encrypted_data = encrypt(chunk)
-            outfile.write(str(encrypted_data))
-        f.close()
 
+            outfile.write(encrypted_data)
+        f.close()
     outfile.close()
     return fileName
 
 def decryptFileInChunks(path):
     f = open(path, 'rb')
-    fileName = "decrypted-" + path.replace('encrypted-','')
-    print("Decrypting " + path + " as " + fileName)
+    outFileName = "decrypted-" + path.replace('encrypted-','')
+    print("Decrypting " + path + " to " + outFileName)
 
-    with open(fileName, 'w') as outfile:
+    with open(outFileName, 'wb') as outfile:
         while True:
-            chunk = f.read(1024)
+            chunk = f.read(BYTE_COUNT_DECRYPT_CHUNK)
             if not chunk:
                 break
-
+            
             decrypted_data = decrypt(chunk)
-            outfile.write(str(decrypted_data))
+
+            outfile.write(decrypted_data)
         f.close()
 
     outfile.close()
-    return fileName
+
+    return outFileName
 
 # Encrypt binary data using public key
 def encrypt(data_chunk):
-    e,n = readPubKeyPair()
-    chunk_int = int.from_bytes(data_chunk, byteorder='big', signed=False)
-    cipher_text = pow(chunk_int, e, n)
-    return cipher_text
+    n,e = readPubKeyPair()
+    chunk_int = bytesToInt(data_chunk)
+    encrypted_int = pow(chunk_int, e, n)
+
+    return intToBytes(encrypted_int, BYTE_COUNT_DECRYPT_CHUNK)
 
 # Decrypt binary data using private key
 def decrypt(encrypted_data_chunk):
-    d,n = readPrivKeyPair()
-    chunk_int = int.from_bytes(encrypted_data_chunk, byteorder='big', signed=False)
+    n,d = readPrivKeyPair()
+    chunk_int = bytesToInt(encrypted_data_chunk)
     plain_text = pow(chunk_int, d, n)
-    
-    return plain_text
+
+    return intToBytes(plain_text)
+
+def bytesToInt(raw_bytes: bytes) -> int:
+    return int.from_bytes(raw_bytes, 'big', signed=False)
+
+def intToBytes(number: int, fill_size: int = 0) -> bytes:
+    if number < 0:
+        raise ValueError("Number must be an unsigned integer: %d" % number)
+
+    bytes_required = max(BYTE_COUNT_READ_CHUNK, math.ceil(number.bit_length() / 8))
+
+    if fill_size > 0:
+        return number.to_bytes(fill_size, 'big')
+
+    return number.to_bytes(bytes_required, 'big')

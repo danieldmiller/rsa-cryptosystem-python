@@ -1,0 +1,6 @@
+privateKey.txt
+publicKey.txt
+decrypted-file.jpg
+encrypted-file.jpg
+.DS_Store
+__pycache__/
