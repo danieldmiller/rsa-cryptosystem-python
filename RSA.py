@@ -28,17 +28,21 @@ def generate_key_pair(keysize):
         g = prime.gcd(e,phi)
         if(g == 1):
             break
-    
+
     #generate private key
     d = prime.euclidAlgorithm(e, phi)
     
     return (e,d,n)
 
-# Encrypt binary data using public key
-def encrypt(data, public_key):
-    e,n = fileHandler.readPubKeyPair()
-    
+def initKeys():
+    key_size = 1024
+    e,d,n = generate_key_pair(key_size)
+    fileHandler.saveKeyPair(e,d,n)
 
-# Decrypt using private key
-def decrypt():
-    d,n = fileHandler.readPrivKeyPair()
+def main():
+    initKeys()
+    encrypted_file_path = fileHandler.encryptFileInChunks("file.jpg")
+    fileHandler.decryptFileInChunks(encrypted_file_path)
+
+if __name__ == "__main__":
+    main()
